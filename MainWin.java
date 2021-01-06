@@ -68,37 +68,20 @@ public class MainWin extends JFrame implements ActionListener {
 
             getData=new JButton("Pobierz dane");
             getData.addActionListener(this);
-            getData.setBounds(50,480,150,50);
+            getData.setBounds(425,480,150,50);
             add(getData);
+            
+
+            //Showing existing shares//
             for(int i=0;i<shares.size();i++)
             {
-                addJ(rows++,shares,shares.size()-1);
+                addJ(rows++,shares,i);
             }
+            Image icon = Toolkit.getDefaultToolkit().getImage("TkyHAZ_3.jpg");
+            setIconImage(icon);
             setVisible(true);
         }
 
-        public void addJ(int rows,List<Share> shares,int size)
-        {
-            labels.add(new JLabel(shares.get(size).name,SwingConstants.CENTER));
-            cont.add(labels.get(labels.size()-1));
-            labels.add(new JLabel(String.valueOf(shares.get(size).amount),SwingConstants.CENTER));
-            cont.add(labels.get(labels.size()-1));
-            labels.add(new JLabel(String.valueOf(shares.get(size).price),SwingConstants.CENTER));
-            cont.add(labels.get(labels.size()-1));
-            labels.add(new JLabel(String.valueOf(Share.TotalPrice(shares.get(size).amount,shares.get(size).price)),SwingConstants.CENTER));
-            cont.add(labels.get(labels.size()-1));
-
-
-            labels.add(new JLabel("",SwingConstants.CENTER));
-            cont.add(labels.get(labels.size()-1));
-            labels.add(new JLabel("",SwingConstants.CENTER));
-            cont.add(labels.get(labels.size()-1));
-            labels.add(new JLabel("",SwingConstants.CENTER));
-            cont.add(labels.get(labels.size()-1));
-
-            cont.setLayout(new GridLayout(rows++,7));
-            revalidate();
-        }
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -122,6 +105,11 @@ public class MainWin extends JFrame implements ActionListener {
                 {
                     double value,totalV,totalP;
                     value=Url.getPrice(shares.get(i).link);
+                    if(value==-2)
+                    {
+                        JOptionPane.showMessageDialog(this,"Dla akcji " + shares.get(i).name + " podano zły link \r\nEdytuj lub usuń tę akcję");
+                        break;
+                    }
                     labels.get(i*7+4).setText(String.valueOf(value));
                     totalV=Share.TotalPrice(Integer.parseInt(labels.get(i*7+1).getText()),value);
                     totalV*=100;
@@ -136,4 +124,30 @@ public class MainWin extends JFrame implements ActionListener {
                 }
             }
         }
+
+        //Adding new share labels into content panel//
+        public void addJ(int rows,List<Share> shares,int size)
+        {
+            labels.add(new JLabel(shares.get(size).name,SwingConstants.CENTER));
+            cont.add(labels.get(labels.size()-1));
+            labels.add(new JLabel(String.valueOf(shares.get(size).amount),SwingConstants.CENTER));
+            cont.add(labels.get(labels.size()-1));
+            labels.add(new JLabel(String.valueOf(shares.get(size).price),SwingConstants.CENTER));
+            cont.add(labels.get(labels.size()-1));
+            labels.add(new JLabel(String.valueOf(Share.TotalPrice(shares.get(size).amount,shares.get(size).price)),SwingConstants.CENTER));
+            cont.add(labels.get(labels.size()-1));
+
+
+            labels.add(new JLabel("",SwingConstants.CENTER));
+            cont.add(labels.get(labels.size()-1));
+            labels.add(new JLabel("",SwingConstants.CENTER));
+            cont.add(labels.get(labels.size()-1));
+            labels.add(new JLabel("",SwingConstants.CENTER));
+            cont.add(labels.get(labels.size()-1));
+
+            cont.setLayout(new GridLayout(rows++,7));
+            revalidate();
+        }
+
+
 }

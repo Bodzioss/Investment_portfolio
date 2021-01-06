@@ -35,7 +35,8 @@ public class Url {
             return Double.parseDouble(s);
 
         } catch (MalformedURLException mue) {
-            mue.printStackTrace();
+            return -2;
+           // mue.printStackTrace();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } finally {

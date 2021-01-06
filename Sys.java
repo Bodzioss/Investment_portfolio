@@ -13,11 +13,12 @@ public class Sys {
         }
         catch (FileNotFoundException fine)
         {
-            // nothing to see here
+            //Nothing to show here
         }
         MainWin mainWin=new MainWin(shares);
     }
 
+    //Reading shares from txt file//
     public static List<Share> read() throws FileNotFoundException {
         List<Share> shares=new ArrayList<>();
         Scanner readB = new Scanner(new File("file.txt"));
@@ -33,8 +34,8 @@ public class Sys {
         return shares;
     }
 
+    //Saving shares into txt file//
     public static List<Share> save(List<Share> shares) throws IOException {
-
 
         for(int i=0;i<shares.size();i++)
         {
