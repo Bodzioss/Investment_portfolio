@@ -1,35 +1,39 @@
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class MainWin extends JFrame implements ActionListener {
-        JLabel title;
-        JPanel cat,cont,bottom;
-        JTextField tID,tPrice,tAmount,tLink;
-        JButton addShare,getData;
+        JLabel title,jSumValue,jSumTotalValue,jSumProfit;
+        JPanel cat,cont,sum;
+        JButton addShare,getData,getHistory;
         int rows=1;
         List<JLabel> labels=new ArrayList<>();
         List<Share> shares;
+        Border border =BorderFactory.createLineBorder(Color.BLACK);
+        final int FRAME_WIDTH=1000;
+        final int FRAME_HEIGHT=550;
 
         public MainWin(List<Share> shares)
         {
             this.shares=shares;
-
+            setTitle("Rachunek maklerski");
             setLayout(null);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            setSize(1000,600);
+            setSize(FRAME_WIDTH,FRAME_HEIGHT);
+            setLocationRelativeTo(null);
 
             title=new JLabel("Rachunek maklerski",SwingConstants.CENTER);
-            title.setBounds(0,0,1000,50);
+            title.setBounds(0,0,FRAME_WIDTH,50);
             add(title);
             cat=new JPanel(new GridLayout(1,7));
-            cat.setBounds(50,50,900,30);
+            cat.setBounds(50,50,FRAME_WIDTH-100,30);
             cat.setBackground(Color.lightGray);
+            cat.setBorder(border);
             add(cat);
 
             cat.add(new JLabel("ID",SwingConstants.CENTER));
@@ -41,35 +45,43 @@ public class MainWin extends JFrame implements ActionListener {
             cat.add(new JLabel("Zysk",SwingConstants.CENTER));
 
             cont=new JPanel(new GridLayout(rows,7));
-            cont.setBounds(50,80,900,300);
+            cont.setBounds(50,80,FRAME_WIDTH-100,300);
             cont.setBackground(Color.lightGray);
+            cont.setBorder(border);
             add(cont);
 
-            bottom=new JPanel(new GridLayout(1,5,20,20));
-            bottom.setBounds(50,400,600,50);
-            bottom.setBackground(Color.lightGray);
-            add(bottom);
+            sum=new JPanel(new GridLayout(rows,7));
+            sum.setBounds(50,380,FRAME_WIDTH-100,30);
+            sum.setBackground(Color.lightGray);
+            sum.setBorder(border);
+            add(sum);
 
-            tID=new JTextField();
-            bottom.add(tID);
+            sum.add(new JLabel("",SwingConstants.CENTER));
+            sum.add(new JLabel(String.valueOf(Share.sumAmount(shares)),SwingConstants.CENTER));
+            sum.add(new JLabel(String.valueOf(Share.sumPrice(shares)),SwingConstants.CENTER));
+            sum.add(new JLabel(String.valueOf(Share.sumTotalPrice(shares)),SwingConstants.CENTER));
+            jSumValue = new JLabel("",SwingConstants.CENTER);
+            sum.add(jSumValue);
+            jSumTotalValue= new JLabel("",SwingConstants.CENTER);
+            sum.add(jSumTotalValue);
+            jSumProfit = new JLabel("",SwingConstants.CENTER);
+            sum.add(jSumProfit);
 
-            tAmount=new JTextField();
-            bottom.add(tAmount);
-
-            tPrice=new JTextField();
-            bottom.add(tPrice);
-
-            tLink=new JTextField();
-            bottom.add(tLink);
 
             addShare=new JButton("Dodaj akcję");
             addShare.addActionListener(this);
-            bottom.add(addShare);
+            addShare.setBounds(275,430,150,50);
+            add(addShare);
 
             getData=new JButton("Pobierz dane");
             getData.addActionListener(this);
-            getData.setBounds(425,480,150,50);
+            getData.setBounds(425,430,150,50);
             add(getData);
+
+            getHistory=new JButton("Historia");
+            getHistory.addActionListener(this);
+            getHistory.setBounds(575,430,150,50);
+            add(getHistory);
             
 
             //Showing existing shares//
@@ -87,41 +99,18 @@ public class MainWin extends JFrame implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             Object source=e.getSource();
 
+            /*Adding share button action*/
             if(source==addShare) {
-                Share.addShare(shares, tID.getText(), Integer.parseInt(tAmount.getText()), Double.parseDouble(tPrice.getText()), tLink.getText());
-                addJ(rows++, shares, shares.size() - 1);
-
-                try {
-                    Sys.save(shares);
-                }
-                catch (IOException ioe)
-                {
-                    // nothing to see here
-                }
+                new AddShareWin(shares,this,rows++);
             }
+            /*Getting data button action*/
             else if(source==getData)
             {
-                for(int i=0;i<shares.size();i++)
-                {
-                    double value,totalV,totalP;
-                    value=Url.getPrice(shares.get(i).link);
-                    if(value==-2)
-                    {
-                        JOptionPane.showMessageDialog(this,"Dla akcji " + shares.get(i).name + " podano zły link \r\nEdytuj lub usuń tę akcję");
-                        break;
-                    }
-                    labels.get(i*7+4).setText(String.valueOf(value));
-                    totalV=Share.TotalPrice(Integer.parseInt(labels.get(i*7+1).getText()),value);
-                    totalV*=100;
-                    totalV=Math.round(totalV);
-                    totalV/=100;
-                    labels.get(i*7+5).setText(String.valueOf(totalV));
-                    totalP=Double.parseDouble(labels.get(i*7+3).getText());
-                    totalP*=100;
-                    totalP=Math.round(totalP);
-                    totalP/=100;
-                    labels.get(i*7+6).setText(String.valueOf(totalV-totalP));
-                }
+                getData(shares);
+            }
+            else if(source==getHistory)
+            {
+
             }
         }
 
@@ -137,7 +126,6 @@ public class MainWin extends JFrame implements ActionListener {
             labels.add(new JLabel(String.valueOf(Share.TotalPrice(shares.get(size).amount,shares.get(size).price)),SwingConstants.CENTER));
             cont.add(labels.get(labels.size()-1));
 
-
             labels.add(new JLabel("",SwingConstants.CENTER));
             cont.add(labels.get(labels.size()-1));
             labels.add(new JLabel("",SwingConstants.CENTER));
@@ -149,5 +137,41 @@ public class MainWin extends JFrame implements ActionListener {
             revalidate();
         }
 
+        public double myRound(double a)
+        {
+            a*=100;
+            a=Math.round(a);
+            a/=100;
+            return a;
+        }
 
+        public void getData(List<Share> shares)
+        {
+            double sValue=0;
+            double sTotalValue=0;
+            double sProfit=0;
+            for(int i=0;i<shares.size();i++)
+            {
+                double value,totalV,totalP;
+                value=Url.getPrice(shares.get(i).link);
+                if(value==-2)
+                {
+                    JOptionPane.showMessageDialog(this,"Dla akcji " + shares.get(i).name + " podano zły link \r\nEdytuj lub usuń tę akcję");
+                    break;
+                }
+                labels.get(i*7+4).setText(String.valueOf(value));
+                sValue+=value;
+
+                totalV=Share.TotalPrice(Integer.parseInt(labels.get(i*7+1).getText()),value);
+                labels.get(i*7+5).setText(String.valueOf(myRound(totalV)));
+                sTotalValue+=totalV;
+
+                totalP=Double.parseDouble(labels.get(i*7+3).getText());
+                labels.get(i*7+6).setText(String.valueOf(myRound(totalV-totalP)));
+                sProfit+=totalV-totalP;
+            }
+            jSumValue.setText(String.valueOf(myRound(sValue)));
+            jSumTotalValue.setText(String.valueOf(myRound(sTotalValue)));
+            jSumProfit.setText(String.valueOf(myRound(sProfit)));
+        }
 }
