@@ -106,7 +106,10 @@ public class MainWin extends JFrame implements ActionListener {
             /*Getting data button action*/
             else if(source==getData)
             {
+                long time = System.currentTimeMillis();
                 getData(shares);
+                time -= System.currentTimeMillis();
+                System.out.println(Math.abs(time)/1000);
             }
             else if(source==getHistory)
             {
