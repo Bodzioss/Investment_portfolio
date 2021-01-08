@@ -23,34 +23,19 @@ public class Share {
     {
         return price*amount;
     }
-    public static double TotalValue(int amount,double value)
-    {
-        return value*amount;
-    }
 
-    public static Double sumPrice(List<Share> shares) {
-        double sum=0;
-        for(int i=0;i<shares.size();i++)
-        {
-            sum+=shares.get(i).price;
-        }
-        return sum;
-    }
     public static Double sumTotalPrice(List<Share> shares) {
         double sum=0;
-        for(int i=0;i<shares.size();i++)
-        {
-            sum+=shares.get(i).price*shares.get(i).amount;
+        for (Share share : shares) {
+            sum += share.price * share.amount;
         }
         return sum;
     }
-
 
     public static int sumAmount(List<Share> shares) {
         int sum=0;
-        for(int i=0;i<shares.size();i++)
-        {
-            sum+=shares.get(i).amount;
+        for (Share share : shares) {
+            sum += share.amount;
         }
         return sum;
     }

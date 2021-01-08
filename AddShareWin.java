@@ -7,12 +7,13 @@ import java.util.List;
 
 public class AddShareWin extends JFrame implements ActionListener {
     List<Share> shares;
-    int rows;
     MainWin win;
     JPanel top,bottom;
     JLabel lID,lAmount,lPrice,lLink;
     JTextField tID,tAmount,tPrice,tLink;
     JButton addShare;
+    int rows;
+
     public AddShareWin(List<Share> shares,MainWin win,int rows)
     {
         this.rows=rows;
@@ -81,11 +82,13 @@ public class AddShareWin extends JFrame implements ActionListener {
 
                 try {
                     Sys.save(shares);
-                } catch (IOException ioe) {
+                }
+                catch (IOException ioe) {
                     // nothing to see here
                 }
                 setVisible(false);
-            } catch (NumberFormatException nfe) {
+            }
+            catch (NumberFormatException nfe) {
                 JOptionPane.showMessageDialog(this, "Złe dane wejściowe dla nowej akcji");
             }
         }

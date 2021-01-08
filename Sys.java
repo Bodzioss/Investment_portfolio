@@ -15,7 +15,7 @@ public class Sys {
         {
             //Nothing to show here
         }
-        MainWin mainWin=new MainWin(shares);
+        new MainWin(shares);
     }
 
     //Reading shares from txt file//
@@ -35,16 +35,14 @@ public class Sys {
     }
 
     //Saving shares into txt file//
-    public static List<Share> save(List<Share> shares) throws IOException {
+    public static void save(List<Share> shares) throws IOException {
 
-        for(int i=0;i<shares.size();i++)
-        {
-            FileWriter file=new FileWriter("file.txt",true);
+        for (Share share : shares) {
+            FileWriter file = new FileWriter("file.txt", true);
             BufferedWriter out = new BufferedWriter(file);
-            out.write(shares.get(i).name+" "+shares.get(i).amount+" "+shares.get(i).price+" "+shares.get(i).link);
+            out.write(share.name + " " + share.amount + " " + share.price + " " + share.link);
             out.newLine();
             out.close();
         }
-        return shares;
     }
 }
