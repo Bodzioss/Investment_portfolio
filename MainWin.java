@@ -5,6 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class MainWin extends JFrame implements ActionListener {
@@ -106,8 +109,19 @@ public class MainWin extends JFrame implements ActionListener {
             /*Getting data button action*/
             else if(source==getData)
             {
+                ExecutorService executorService = Executors.newFixedThreadPool(shares.size());
                 long time = System.currentTimeMillis();
-                getData(shares);
+                for(int i=0;i<shares.size();i++) {
+                    int finalI = i;
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            getData(shares, finalI);
+                        }
+                    });
+                   // getData(shares,i);
+                }
+
                 time -= System.currentTimeMillis();
                 System.out.println(Math.abs(time)/1000);
             }
@@ -148,19 +162,18 @@ public class MainWin extends JFrame implements ActionListener {
             return a;
         }
 
-        public void getData(List<Share> shares)
+        public void getData(List<Share> shares,int i)
         {
             double sValue=0;
             double sTotalValue=0;
             double sProfit=0;
-            for(int i=0;i<shares.size();i++)
-            {
+
                 double value,totalV,totalP;
                 value=Url.getPrice(shares.get(i).link);
                 if(value==-2)
                 {
                     JOptionPane.showMessageDialog(this,"Dla akcji " + shares.get(i).name + " podano zły link \r\nEdytuj lub usuń tę akcję");
-                    break;
+                    return;
                 }
                 labels.get(i*7+4).setText(String.valueOf(value));
                 sValue+=value;
@@ -172,7 +185,7 @@ public class MainWin extends JFrame implements ActionListener {
                 totalP=Double.parseDouble(labels.get(i*7+3).getText());
                 labels.get(i*7+6).setText(String.valueOf(myRound(totalV-totalP)));
                 sProfit+=totalV-totalP;
-            }
+
             jSumValue.setText(String.valueOf(myRound(sValue)));
             jSumTotalValue.setText(String.valueOf(myRound(sTotalValue)));
             jSumProfit.setText(String.valueOf(myRound(sProfit)));
