@@ -3,6 +3,7 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -22,6 +23,7 @@ public class MainWin extends JFrame implements ActionListener {
         double sValue=0;
         double sTotalValue=0;
         double sProfit=0;
+        double value,totalV,totalP;
 
         public MainWin(List<Share> shares)
         {
@@ -48,11 +50,11 @@ public class MainWin extends JFrame implements ActionListener {
             add(cat);
             cat.add(new JLabel("ID",SwingConstants.CENTER));
             cat.add(new JLabel("Ilość",SwingConstants.CENTER));
-            cat.add(new JLabel("Cena kupna",SwingConstants.CENTER));
-            cat.add(new JLabel("Cena całkowita",SwingConstants.CENTER));
-            cat.add(new JLabel("Wartość",SwingConstants.CENTER));
-            cat.add(new JLabel("Wartość całkowita",SwingConstants.CENTER));
-            cat.add(new JLabel("Zysk",SwingConstants.CENTER));
+            cat.add(new JLabel("Cena kupna [zł]",SwingConstants.CENTER));
+            cat.add(new JLabel("Cena całkowita [zł]",SwingConstants.CENTER));
+            cat.add(new JLabel("Wartość [zł]",SwingConstants.CENTER));
+            cat.add(new JLabel("Wartość całkowita [zł]",SwingConstants.CENTER));
+            cat.add(new JLabel("Zysk [zł]",SwingConstants.CENTER));
 
             /*Data Panel*/
             cont=new JPanel(new GridLayout(rows,7));
@@ -114,21 +116,45 @@ public class MainWin extends JFrame implements ActionListener {
             /*Getting data button action*/
             else if(source==getData)
             {
+                sValue=0;
+                sTotalValue=0;
+                sProfit=0;
                 ExecutorService executorService = Executors.newFixedThreadPool(shares.size());
-                long time = System.currentTimeMillis();
-                for(int i=0;i<shares.size();i++) {
-                    int finalI = i;
-                    executorService.submit(() -> getData(shares, finalI));
+                try {
+                    if (Sys.isNew())
+                    {
+                        for(int i=0;i<shares.size();i++) {
+                            int finalI = i;
+                            executorService.submit(() -> {
+                                try {
+                                    getData(shares, finalI);
+                                    Sys.saveHistory(shares,finalI,String.valueOf(myRound(value)), String.valueOf(myRound(totalV)), String.valueOf(myRound(totalV - totalP)), String.valueOf(java.time.LocalDate.now()));
+                                }
+                                catch (IOException ex){
+                                    ex.printStackTrace();
+                                }
+                            });
+                        }
+                    }
+                    else
+                    {
+                        for(int i=0;i<shares.size();i++) {
+                            int finalI = i;
+                            executorService.submit(() -> getData(shares, finalI));
+                        }
+                    }
+                }catch(IOException ioe)
+                {
+                    //Nothing to show here
                 }
 
-                time -= System.currentTimeMillis();
-                System.out.println(Math.abs(time)/1000);
             }
             /*Showing history button action*/
+            /*
             else if(source==getHistory)
             {
                 //TO DO
-            }
+            }*/
         }
 
         //Adding new share labels into content panel//
@@ -165,31 +191,26 @@ public class MainWin extends JFrame implements ActionListener {
 
         /*Thread's getting data method
         * proper method providing data on Url class*/
-        public void getData(List<Share> shares,int i)
-        {
+        public void getData(List<Share> shares,int i){
+            value=Url.getPrice(shares.get(i).link);
 
+            /*MalformedURLException*/
+            if(value==-2)
+            {
+                JOptionPane.showMessageDialog(this,"Dla akcji " + shares.get(i).name + " podano zły link \r\nEdytuj lub usuń tę akcję");
+                return;
+            }
+            labels.get(i*7+4).setText(String.valueOf(myRound(value)));
+            sValue+=value;
 
-                double value,totalV,totalP;
-                value=Url.getPrice(shares.get(i).link);
+            totalV=Share.TotalPrice(Integer.parseInt(labels.get(i*7+1).getText()),value);
+            labels.get(i*7+5).setText(String.valueOf(myRound(totalV)));
+            sTotalValue+=totalV;
 
-                /*MalformedURLException*/
-                if(value==-2)
-                {
-                    JOptionPane.showMessageDialog(this,"Dla akcji " + shares.get(i).name + " podano zły link \r\nEdytuj lub usuń tę akcję");
-                    return;
-                }
-                labels.get(i*7+4).setText(String.valueOf(myRound(value)));
-                sValue+=value;
+            totalP=Double.parseDouble(labels.get(i*7+3).getText());
+            labels.get(i*7+6).setText(String.valueOf(myRound(totalV-totalP)));
+            sProfit+=totalV-totalP;
 
-                totalV=Share.TotalPrice(Integer.parseInt(labels.get(i*7+1).getText()),value);
-                labels.get(i*7+5).setText(String.valueOf(myRound(totalV)));
-                sTotalValue+=totalV;
-
-                totalP=Double.parseDouble(labels.get(i*7+3).getText());
-                labels.get(i*7+6).setText(String.valueOf(myRound(totalV-totalP)));
-                sProfit+=totalV-totalP;
-
-            //jSumValue.setText(String.valueOf(myRound(sValue)));
             jSumTotalValue.setText(String.valueOf(myRound(sTotalValue)));
             jSumProfit.setText(String.valueOf(myRound(sProfit)));
         }

@@ -92,6 +92,5 @@ public class AddShareWin extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Złe dane wejściowe dla nowej akcji");
             }
         }
-
     }
 }
