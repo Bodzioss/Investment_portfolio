@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+
 public class Sys {
     final static String READPATH="data.txt";
     final static String HISTORYPATH="history.txt";
+    final static String SOLDPATH="sold.txt";
+
     public static void main(String[] args) {
         List<Share> shares=new ArrayList<>();
 
@@ -17,6 +20,7 @@ public class Sys {
         {
             //Nothing to see here
         }
+
         new MainWin(shares);
     }
 
@@ -30,20 +34,23 @@ public class Sys {
             int amount = Integer.parseInt(readB.next());
             double price = Double.parseDouble(readB.next());
             String link = readB.next();
-            shares.add(new Share(id, amount, price, link));
+            String date=readB.nextLine();
+            shares.add(new Share(id, amount, price, link,date));
         }
         return shares;
     }
 
+
+
     //Saving shares into txt file//
     public static void save(List<Share> shares) throws IOException {
+        FileWriter file = new FileWriter(READPATH, false);
+        BufferedWriter out = new BufferedWriter(file);
         for (Share share : shares) {
-            FileWriter file = new FileWriter(READPATH, true);
-            BufferedWriter out = new BufferedWriter(file);
-            out.write(share.name + " " + share.amount + " " + share.price + " " + share.link);
+            out.write(share.name + " " + share.amount + " " + share.price + " " + share.link + " " + share.date);
             out.newLine();
-            out.close();
         }
+        out.close();
     }
 
     public static void saveHistory(List<Share> shares,int i,String value,String totalValue,String profit,String date) throws IOException {
@@ -53,6 +60,15 @@ public class Sys {
             out.newLine();
             out.close();
     }
+
+    public static void saveSold(List<Share> shares,int i,String amount,String value,String date) throws IOException {
+        FileWriter file = new FileWriter(SOLDPATH, true);
+        BufferedWriter out = new BufferedWriter(file);
+        out.write(shares.get(i).name + " " + amount + " " + shares.get(i).price + " "+value+" "+" "+ (Integer.parseInt(amount) * Double.parseDouble(value) - Share.TotalPrice(Integer.parseInt(amount), shares.get(i).price)) +" "+shares.get(i).date+" "+date);
+        out.newLine();
+        out.close();
+    }
+
     /*Checking is data actual*/
     public static boolean isNew() throws IOException {
         Scanner readB = new Scanner(new File(HISTORYPATH));
@@ -61,11 +77,15 @@ public class Sys {
              id = readB.next();
         }
 
-        if(id.equals(String.valueOf(LocalDate.now())))
-        {
-            return false;
-        }
-        else
-            return true;
+        return !id.equals(String.valueOf(LocalDate.now()));
+    }
+
+    /*Data approximation*/
+    public static double myRound(double a)
+    {
+        a*=100;
+        a=Math.round(a);
+        a/=100;
+        return a;
     }
 }

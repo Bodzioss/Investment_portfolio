@@ -1,22 +1,26 @@
 import java.util.List;
 
 public class Share {
-    String name,link;
-    double price;
+    String name,link,date,date1,date2;
+    double price,value;
     int amount;
 
-    Share(String name,int amount,double price,String link)
+    Share(String name,int amount,double price,String link,String date)
     {
         this.name=name;
         this.price=price;
         this.amount=amount;
         this.link=link;
-
+        this.date=date;
     }
-
-    public static void addShare(List<Share> shares,String name,int amount,double price,String link) throws NumberFormatException
+    Share(String name,int amount,double price,double value,String date1,String date2)
     {
-        shares.add(new Share(name,amount,price,link));
+        this.name=name;
+        this.price=price;
+        this.amount=amount;
+        this.value=value;
+        this.date1=date1;
+        this.date2=date2;
     }
 
     public static double TotalPrice(int amount,double price)

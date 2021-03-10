@@ -11,8 +11,8 @@ public class AddShareWin extends JFrame implements ActionListener {
     JPanel top,bottom;
     JLabel lID,lAmount,lPrice,lLink;
     JTextField tID,tAmount,tPrice,tLink;
-    JButton addShare;
-    int rows;
+    JButton addShare,addMoreShare,sellShare;
+    int rows,index;
 
     public AddShareWin(List<Share> shares,MainWin win,int rows)
     {
@@ -69,28 +69,149 @@ public class AddShareWin extends JFrame implements ActionListener {
 
     }
 
+    public AddShareWin(List<Share> shares,int index,boolean sell)
+    {
+        this.index=index;
+        this.shares=shares;
+        setLayout(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setSize(700,140);
+        setLocationRelativeTo(null);
+        if(!sell) {
+            setTitle("Dodawanie akcji " + shares.get(index).name);
+            setVisible(true);
+
+            top = new JPanel(new GridLayout(1, 5, 20, 10));
+            top.setBounds(10, 25, 660, 25);
+            add(top);
+
+
+            lAmount = new JLabel("Amount", SwingConstants.CENTER);
+            top.add(lAmount);
+
+            lPrice = new JLabel("Price", SwingConstants.CENTER);
+            top.add(lPrice);
+
+            JLabel nothing = new JLabel("", SwingConstants.CENTER);
+            top.add(nothing);
+
+            bottom = new JPanel(new GridLayout(1, 5, 20, 10));
+            bottom.setBounds(10, 50, 660, 25);
+            add(bottom);
+
+
+            tAmount = new JTextField();
+            bottom.add(tAmount);
+
+            tPrice = new JTextField();
+            bottom.add(tPrice);
+
+
+            addMoreShare = new JButton("Dokup akcję");
+            addMoreShare.addActionListener(this);
+            bottom.add(addMoreShare);
+        }else{
+            setTitle("Sprzedawanie akcji " + shares.get(index).name);
+            setVisible(true);
+
+            top = new JPanel(new GridLayout(1, 5, 20, 10));
+            top.setBounds(10, 25, 660, 25);
+            add(top);
+
+
+            lAmount = new JLabel("Amount", SwingConstants.CENTER);
+            top.add(lAmount);
+
+            lPrice = new JLabel("Price", SwingConstants.CENTER);
+            top.add(lPrice);
+
+            JLabel nothing = new JLabel("", SwingConstants.CENTER);
+            top.add(nothing);
+
+            bottom = new JPanel(new GridLayout(1, 5, 20, 10));
+            bottom.setBounds(10, 50, 660, 25);
+            add(bottom);
+
+
+            tAmount = new JTextField();
+            bottom.add(tAmount);
+
+            tPrice = new JTextField();
+            bottom.add(tPrice);
+
+
+            sellShare = new JButton("Sprzedaj akcje");
+            sellShare.addActionListener(this);
+            bottom.add(sellShare);
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(tID.getText().equals("") || tAmount.getText().equals("") || tPrice.getText().equals("") || tLink.getText().equals(""))
-        {
-            JOptionPane.showMessageDialog(this,"Uzupełnij wszystkie pola");
-        }
-        else {
-            try {
-                Share.addShare(shares, tID.getText(), Integer.parseInt(tAmount.getText()), Double.parseDouble(tPrice.getText()), tLink.getText());
-                win.addJ(rows++, shares, shares.size() - 1);
-
+        Object source = e.getSource();
+        if (source == addShare) {
+            if (tID.getText().equals("") || tAmount.getText().equals("") || tPrice.getText().equals("") || tLink.getText().equals("")) {
+                JOptionPane.showMessageDialog(this, "Uzupełnij wszystkie pola");
+            } else {
                 try {
-                    Sys.save(shares);
+                    shares.add(new Share(tID.getText(), Integer.parseInt(tAmount.getText()), Double.parseDouble(tPrice.getText()), tLink.getText(),String.valueOf(java.time.LocalDate.now())));
+                    win.addJ(rows++, shares, shares.size() - 1);
+
+                    try {
+                        Sys.save(shares);
+                    } catch (IOException ioe) {
+                        // nothing to see here
+                    }
+                    setVisible(false);
+                } catch (NumberFormatException nfe) {
+                    JOptionPane.showMessageDialog(this, "Złe dane wejściowe dla nowej akcji");
                 }
-                catch (IOException ioe) {
-                    // nothing to see here
+            }
+        }else if(source == addMoreShare)
+        {
+            int a;
+            System.out.println(shares.get(index).name);
+            a=shares.get(index).amount;
+            shares.get(index).amount=shares.get(index).amount+ Integer.parseInt(tAmount.getText());
+            shares.get(index).price=((shares.get(index).price*a)+(Double.parseDouble(tAmount.getText())*Double.parseDouble(tPrice.getText())))/shares.get(index).amount;
+            try {
+                Sys.save(shares);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            new MainWin(shares);
+            setVisible(false);
+        }
+        else if(source == sellShare)
+        {
+            if(shares.get(index).amount>Integer.parseInt(tAmount.getText())) {
+                shares.get(index).amount = shares.get(index).amount - Integer.parseInt(tAmount.getText());
+                try{
+                    Sys.saveSold(shares,index,String.valueOf(Integer.parseInt(tAmount.getText())),tPrice.getText(),String.valueOf(java.time.LocalDate.now()));
+                }catch (IOException ioe)
+                {
+                    ioe.printStackTrace();
                 }
-                setVisible(false);
+            }else if(shares.get(index).amount==Integer.parseInt(tAmount.getText()))
+            {
+                try{
+                    Sys.saveSold(shares,index,String.valueOf(shares.get(index).amount),tPrice.getText(),String.valueOf(java.time.LocalDate.now()));
+                }catch (IOException ioe)
+                {
+                    ioe.printStackTrace();
+                }
+                shares.remove(index);
             }
-            catch (NumberFormatException nfe) {
-                JOptionPane.showMessageDialog(this, "Złe dane wejściowe dla nowej akcji");
+            else{
+                JOptionPane.showMessageDialog(this, "Możesz sprzedać maksymalnie ("+shares.get(index).amount+") akcji "+shares.get(index).name);
             }
+            try {
+                Sys.save(shares);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            new MainWin(shares);
+            setVisible(false);
         }
     }
 }

@@ -7,7 +7,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 public class Url {
-    public static double getPrice(String link) {
+    public static double getPrice(String link) throws IOException{
         URLConnection url;
         InputStream is = null;
         BufferedReader br;
@@ -33,12 +33,9 @@ public class Url {
             s=s.replace(',','.');
 
             return Double.parseDouble(s);
-
         } catch (MalformedURLException mue) {
             return -2;
            // mue.printStackTrace();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
         } finally {
             try {
                 if (is != null) is.close();
@@ -46,6 +43,5 @@ public class Url {
                 // nothing to see here
             }
         }
-        return -1;
     }
 }
