@@ -27,20 +27,20 @@ public class Url {
             }
             String content=stringBuilder.toString();
 
-            int indexOf=content.indexOf("<input type=\"text\" class=\"newInput inputTextBox alertValue\" placeholder");
-            String s=content.substring(indexOf+73);
-            s=s.split("\"")[0];
+            int indexOf=content.indexOf("instrument-price-last");
+            String s=content.substring(indexOf+23);
+            s=s.split("<")[0];
             s=s.replace(',','.');
-
             return Double.parseDouble(s);
         } catch (MalformedURLException mue) {
+            mue.printStackTrace();
             return -2;
-           // mue.printStackTrace();
         } finally {
             try {
                 if (is != null) is.close();
             } catch (IOException ioe) {
-                // nothing to see here
+                ioe.printStackTrace();
+                return -3;
             }
         }
     }
